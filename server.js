@@ -27,7 +27,7 @@ let unifiedProfile = null;
 
 app.post("/agenthandoff", async (req, res) => {
 
-  console.log ("in agenthandoff: ");
+  console.log ("in agenthandoff: WORKSPACE_SID: ", process.env.WORKSPACE_SID);
 
   const taskAttributes = {
     accountSid: req.body.AccountSid,
@@ -37,12 +37,13 @@ app.post("/agenthandoff", async (req, res) => {
   };
 
   const twiml = new twilio.twiml.VoiceResponse();
-  
 
+  //hand off to Twilio Flex only if WORKSPACE_SID is available 
+if (process.env.WORKSPACE_SID !== 'undefined'){
   twiml.enqueue({
     workflowSid: `${process.env.WORKSPACE_SID}`,  
   }).task({ priority: '1000' }, JSON.stringify(taskAttributes));
-
+}
 
   res.type("text/xml");
   res.end(twiml.toString());
@@ -92,6 +93,7 @@ app.post("/incoming", async (req, res) => {
 
 
     //TODO: add env params for voice, language, transcriptionprovider
+
     const response = `<Response>
       <Connect action="https://${process.env.SERVER}/${process.env.CONNECT_ACTION_URI}">
         <ConversationRelay url="wss://${process.env.SERVER}/sockets" dtmfDetection="true">
@@ -99,7 +101,8 @@ app.post("/incoming", async (req, res) => {
           <Language code="es-ES" ttsProvider="google" voice="es-ES-Neural2-B" />
         </ConversationRelay>
       </Connect>
-    </Response>`;
+      </Response>`;
+
     res.type("text/xml");
     res.end(response.toString());
   } catch (err) {
