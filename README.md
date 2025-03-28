@@ -41,42 +41,41 @@ Configure this Twiml Bin to your Twilio number
 
 
 ## Step 4 (Option 1): Start the docker container from the pre-built image
-### **1. Pull the Docker image from Docker Hub
+### **a. Pull the Docker image from Docker Hub**
 ```sh
 docker pull sudheertwilio/my-convo-relay-server:latest
 ```
 
-### **2. Create and start a new Docker container from image
+### **b. Create and start a new Docker container from image**
 ```sh
 docker run --env-file .env -p 8080:8080 my-convo-relay-server
 ```
 
 ## Step 4 (Option 2): Running the server Locally
-### **1. Install Dependencies**
+### **a. Install Dependencies**
 ```sh
 npm install
 ```
 
-### **2. Start the Web & WebSocket Servers**
+### **b. Start the Web & WebSocket Servers**
 ```sh
 node server.js
 ```
-### **3. Exposing Locally Hosted Server with Ngrok (Optional)**
+### **c. Exposing Locally Hosted Server with Ngrok (Optional)**
 ```sh
 ngrok http 8080
 ```
 This will generate a public URL for your local server.
 
 ## Step 4 (Option 3): Build Docker image and run the server in the container
-### **1. Build the Docker Image**
+### **a. Build the Docker Image**
 ```sh
 docker build -t my-convo-relay-server .
 [optional to export image as tar file] docker save -o docker-image/my-convo-relay-server.tar my-convo-relay-server
 ```
-### **2. [Option 1] Deploy your Docker Image**
-Choose your favorite cloud provider to host the docker image and deploy it
+### **b. Deploy your Docker Image**
+Choose your favorite cloud provider to deploy the Dcoker container or just run locally. To run locally:
 
-### **2. [Option 2] Run the Container locally**
 ```sh
 docker run --env-file .env -p 8080:8080 my-convo-relay-server
 
