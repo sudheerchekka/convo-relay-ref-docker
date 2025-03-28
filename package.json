@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.775.0",
     "@segment/analytics-node": "^2.2.1",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",

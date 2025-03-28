@@ -3,7 +3,16 @@ const express = require('express');
 const ExpressWs = require("express-ws");
 const twilio = require('twilio');
 
-const { GptService } = require("./services/gpt-service");
+// const { GptService } = require("./services/gpt-service");
+// const { GptServiceBedrock } = require("./services/gpt-service-bedrock");
+
+const services = {
+  AWS: require("./services/GptServiceBedrock"),
+  OPENAI: require("./services/GptServiceOpenAI"),
+  DEFAULT: require("./services/GptServiceOpenAI")
+};
+
+
 const { TextService } = require("./services/text-service");
 const { EndSessionService } = require("./services/end-session-service");
 const SegmentService = require("./services/segment-service");
@@ -24,6 +33,8 @@ ExpressWs(app);
 
 let gptService;
 let unifiedProfile = null;
+
+console.log("started serer.js");
 
 app.post("/agenthandoff", async (req, res) => {
 
@@ -57,8 +68,12 @@ app.post("/incoming", async (req, res) => {
     logs.length = 0; // Clear logs
     addLog("info", "incoming call started");
 
-    // Initialize GPT service
-    gptService = new GptService(`${process.env.LLM_MODEL}`);
+    // Initialize the appropriate GPT service
+    const selectedGPTService = process.env.LLM_VENDOR;
+    addLog("info", "Selecting the GPT service for: " + selectedGPTService);
+    const modelEnvVar = `${selectedGPTService}_LLM_MODEL`;
+    console.log ("LLM MODEL: ", `${process.env[modelEnvVar]}`);
+    gptService = new services[selectedGPTService](`${process.env[modelEnvVar]}`);
 
     // get Unified Profile data from Segment
     const segmentService = new SegmentService();
@@ -73,12 +88,9 @@ app.post("/incoming", async (req, res) => {
       } else { unifiedProfileEvents = null}
       console.log("server.js: Events found: ", unifiedProfileEvents);
 
-      gptService.userContext.push({ role: "system", content: JSON.stringify(unifiedProfile) });
+      gptService.updateUserContext("system", JSON.stringify(unifiedProfile));
       if(unifiedProfileEvents!=null){
-        gptService.userContext.push({
-          role: "system",
-          content: unifiedProfileEvents,
-        });
+        gptService.updateUserContext("system", unifiedProfileEvents);
       }
     }
     else 
@@ -86,14 +98,10 @@ app.post("/incoming", async (req, res) => {
 
 
     //TODO: ${record.language}
-    gptService.userContext.push({
-      role: "system",
-      content: `You can speak in many languages, but use default language of english for this conversation from now on! Remember it as the default language, even you change language in between. treat en-US and en-GB etc. as different languages.`,
-    });
-
+    let content = "You can speak in many languages, but use default language of english for this conversation from now on! Remember it as the default language, even you change language in between. treat en-US and en-GB etc. as different languages.";
+    gptService.updateUserContext("system", content);
 
     //TODO: add env params for voice, language, transcriptionprovider
-
     const response = `<Response>
       <Connect action="https://${process.env.SERVER}/${process.env.CONNECT_ACTION_URI}">
         <ConversationRelay url="wss://${process.env.SERVER}/sockets" dtmfDetection="true">
@@ -204,8 +212,8 @@ app.ws("/sockets", (ws) => {
       
     gptService.on('gptreply', async (gptReply, final, icount) => {
       //console.log(`Interaction ${icount}: GPT -> TTS: ${gptReply}`.green );
-      //addLog('info', gptReply);
-      //addLog('gpt', `GPT -> convrelay: Interaction ${icount}: ${gptReply}`);
+      addLog('info', gptReply);
+      addLog('gpt', `GPT -> convrelay: Interaction ${icount}: ${gptReply}`);
       textService.sendText(gptReply, final);
     });
 

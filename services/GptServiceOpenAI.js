@@ -19,7 +19,7 @@ const availableFunctions = {};
 //   console.log(`load function: ${functionName}`);
 // });
 
-class GptService extends EventEmitter {
+class GptServiceOpenAI extends EventEmitter {
   constructor(model) { // = "gpt-4o"
     console.log(" new Gptservice model: " + model);
     super();
@@ -71,15 +71,20 @@ class GptService extends EventEmitter {
     }
   }
 
-  updateUserContext(name, role, text) {
-    console.log("updateUserContext: ", name, role, text);
-    if (name !== "user") {
-      console.log("Not a user");
-      this.userContext.push({ role: role, name: name, content: text });
-    } else {
-      console.log("User");
-      this.userContext.push({ role: role, content: text });
-    }
+  // updateUserContext(name, role, text) {
+  //   console.log("updateUserContext: ", name, role, text);
+  //   if (name !== "user") {
+  //     console.log("Not a user");
+  //     this.userContext.push({ role: role, name: name, content: text });
+  //   } else {
+  //     console.log("User");
+  //     this.userContext.push({ role: role, content: text });
+  //   }
+  // }
+
+  updateUserContext(role, text) {
+    console.log("updateUserContext: ", role, text);
+    this.userContext.push({ role: role, content: text });
   }
 
   // Summarize conversation
@@ -98,8 +103,9 @@ class GptService extends EventEmitter {
 
   async completion(text, interactionCount, role = "user", name = "user") {
     console.log("GptService completion: ", role, name, text);
+    console.log("this.userContext: ", this.userContext);
     this.isInterrupted = false;
-    this.updateUserContext(name, role, text);
+    this.updateUserContext(role, text);
     // Step 1: Send user transcription to Chat GPT
     let stream = await this.openai.chat.completions.create({
       model: this.model,
@@ -208,4 +214,4 @@ class GptService extends EventEmitter {
   }
 }
 
-module.exports = { GptService };
+module.exports = GptServiceOpenAI;
