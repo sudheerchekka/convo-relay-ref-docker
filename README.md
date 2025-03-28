@@ -22,7 +22,34 @@ This repository provides a Dockerized solution for hosting a web server and WebS
 ### **.env File Setup**
 Create a `.env` file by making a copy of `.env.example`
 
-## Running Locally
+### Configure your Twilio phone number with the twiml redirect to your webserver
+```sh
+Create a Twiml Bin using this
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Redirect method="POST">https://<your_domain_name>.ngrok.io/incoming</Redirect>
+</Response>
+
+Configure this Twiml Bin to your Twilio number
+```
+
+## Start ngrok to create a public url for your server
+```sh
+ngrok http --subdomain=<your_domain_name> 8080
+```
+
+## Start the docker container from the pre-built image
+### **1. Load Docker image from tar file
+```sh
+docker load -i docker-image/my-convo-relay-server.tar
+```
+
+### **2. Create and start a new Docker container from image
+```sh
+docker run --env-file .env -p 8080:8080 my-convo-relay-server
+```
+
+## Running the server Locally
 ### **1. Install Dependencies**
 ```sh
 npm install
@@ -38,17 +65,18 @@ ngrok http 8080
 ```
 This will generate a public URL for your local server.
 
-## Running with Docker
+## Build Docker image and run the server in the container
 ### **1. Build the Docker Image**
 ```sh
-docker build -t my-websocket-server .
+docker build -t my-convo-relay-server .
+[optional to export image as tar file] docker save -o docker-image/my-convo-relay-server.tar my-convo-relay-server
 ```
 ### **2. [Option 1] Deploy your Docker Image**
 Choose your favorite cloud provider to host the docker image and deploy it
 
 ### **2. [Option 2] Run the Container locally**
 ```sh
-docker run --env-file .env -p 8080:8080 my-websocket-server
+docker run --env-file .env -p 8080:8080 my-convo-relay-server
 
 ngrok http 8080
 ```

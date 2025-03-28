@@ -15,7 +15,7 @@ const services = {
 
 const { TextService } = require("./services/text-service");
 const { EndSessionService } = require("./services/end-session-service");
-const SegmentService = require("./services/segment-service");
+const SegmentService  = require("./services/segment-service");
 
 // Import helper functions
 const {
@@ -75,26 +75,37 @@ app.post("/incoming", async (req, res) => {
     console.log ("LLM MODEL: ", `${process.env[modelEnvVar]}`);
     gptService = new services[selectedGPTService](`${process.env[modelEnvVar]}`);
 
-    // get Unified Profile data from Segment
-    const segmentService = new SegmentService();
-    let up = await segmentService.getSegmentProfileByPhone(req.body.From);
-    if (up != null){
-      unifiedProfile = JSON.stringify(up.data);
-      console.log("Profile Found: ", unifiedProfile);
-
-      let e = await segmentService.getEventsByPhone(req.body.From);
-      if(e.data != null) {
-        unifiedProfileEvents = JSON.stringify(e.data);
-      } else { unifiedProfileEvents = null}
-      console.log("server.js: Events found: ", unifiedProfileEvents);
-
-      gptService.updateUserContext("system", JSON.stringify(unifiedProfile));
-      if(unifiedProfileEvents!=null){
-        gptService.updateUserContext("system", unifiedProfileEvents);
-      }
+    let segmentService = null;
+    if (process.env.SEGMENT_UNIFY_WRITE_KEY != "" && process.env.SEGMENT_UNIFY_SPACE_ID != "" || process.env.SEGMENT_UNIFY_ACCESS_TOKEN != ""){
+      segmentService = new SegmentService();
     }
     else 
-      console.log("No profile Found: ");
+    {
+      console.log("process.env.SEGMENT_UNIFY_WRITE_KEY: ", process.env.SEGMENT_UNIFY_WRITE_KEY);
+      console.log("Segment is not configured");
+    }
+    if (segmentService){
+      // get Unified Profile data from Segment
+      let up = await segmentService.getSegmentProfileByPhone(req.body.From);
+      if (up != null){
+        unifiedProfile = JSON.stringify(up.data);
+        console.log("Profile Found: ", unifiedProfile);
+
+        let e = await segmentService.getEventsByPhone(req.body.From);
+        if(e.data != null) {
+          unifiedProfileEvents = JSON.stringify(e.data);
+        } else { unifiedProfileEvents = null}
+        console.log("server.js: Events found: ", unifiedProfileEvents);
+
+        gptService.updateUserContext("system", JSON.stringify(unifiedProfile));
+        if(unifiedProfileEvents!=null){
+          gptService.updateUserContext("system", unifiedProfileEvents);
+        }
+      }
+      else 
+        console.log("No profile Found: ");
+  }
+  else{console.log("Segment is not configured")};
 
 
     //TODO: ${record.language}

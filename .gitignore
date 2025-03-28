@@ -1,3 +1,4 @@
 node_modules/
 .env
 ./aws/credentials
+docker-image/my-convo-relay-server.tar

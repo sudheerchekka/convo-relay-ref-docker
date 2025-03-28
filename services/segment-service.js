@@ -3,13 +3,19 @@ require("dotenv").config();
 const axios = require("axios");
 const profileToken = process.env.SEGMENT_UNIFY_ACCESS_TOKEN;
 
-const analytics = new Analytics({
-  writeKey: process.env.SEGMENT_UNIFY_WRITE_KEY,
-});
-const spaceId = process.env.SEGMENT_UNIFY_SPACE_ID;
-const exclude_events = process.env.SEGMENT_EXCLUDE_EVENTS;
+
 
 class SegmentService{
+
+  constructor() {
+    if (process.env.SEGMENT_UNIFY_WRITE_KEY = undefined){
+      const analytics = new Analytics({
+        writeKey: process.env.SEGMENT_UNIFY_WRITE_KEY,
+      });
+    }
+    this.spaceId = process.env.SEGMENT_UNIFY_SPACE_ID;
+    this.exclude_events = process.env.SEGMENT_EXCLUDE_EVENTS;
+  }
 
   upsertUser({ userId, traits }) {
     try {
@@ -17,7 +23,7 @@ class SegmentService{
         throw new Error("Either `userId` or `anonymousId` must be provided.");
       }
 
-      analytics.identify({ userId, traits });
+      this.analytics.identify({ userId, traits });
     } catch (error) {
       console.error("Error adding user:", error);
     }
@@ -33,7 +39,7 @@ class SegmentService{
   addEvent = (id, eventName, eventProperties) => {
     console.log( 'SegmentSvc:addEvent ', id)
     try {
-      analytics.track({
+      this.analytics.track({
         userId: id,
         event: eventName,
         properties: eventProperties
@@ -61,7 +67,7 @@ class SegmentService{
     // HTTP GET
     await axios
       .get(
-        `https://profiles.segment.com/v1/spaces/${spaceId}/collections/users/profiles/user_id:${id}/traits`,
+        `https://profiles.segment.com/v1/spaces/${this.spaceId}/collections/users/profiles/user_id:${id}/traits`,
         config
       )
       .then((response) => {
@@ -85,7 +91,8 @@ class SegmentService{
     // return JSON object
     let result = {};
 
-    const url = `https://profiles.segment.com/v1/spaces/${spaceId}/collections/users/profiles/phone:${phone}/traits?limit=100`;
+    console.log("space id: ", this.spaceId);
+    const url = `https://profiles.segment.com/v1/spaces/${this.spaceId}/collections/users/profiles/phone:${phone}/traits?limit=100`;
     const password = "";
     const credentials = Buffer.from(`${profileToken}:${password}`).toString(
       "base64"
@@ -140,7 +147,7 @@ class SegmentService{
 
     return await axios
       .get(
-        `https://profiles.segment.com/v1/spaces/${spaceId}/collections/users/profiles/phone:${phone}/events?exclude=${exclude_events}`,
+        `https://profiles.segment.com/v1/spaces/${this.spaceId}/collections/users/profiles/phone:${phone}/events?exclude=${this.exclude_events}`,
         config
       )
 
@@ -171,7 +178,7 @@ class SegmentService{
     // HTTP GET
     axios
       .get(
-        `https://profiles.segment.com/v1/spaces/${spaceId}/collections/users/profiles/user_id:${id}/events`,
+        `https://profiles.segment.com/v1/spaces/${this.spaceId}/collections/users/profiles/user_id:${id}/events`,
         config
       )
       .then((response) => {
