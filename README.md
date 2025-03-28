@@ -41,9 +41,9 @@ Configure this Twiml Bin to your Twilio number
 
 
 ## Step 4 (Option 1): Start the docker container from the pre-built image
-### **a. Load Docker image from tar file
+### **a. Pull the Docker image from Docker Hub
 ```sh
-docker load -i docker-image/my-convo-relay-server.tar
+docker pull sudheertwilio/my-convo-relay-server:latest
 ```
 
 ### **b. Create and start a new Docker container from image
