@@ -34,11 +34,11 @@ ExpressWs(app);
 let gptService;
 let unifiedProfile = null;
 
-console.log("started serer.js");
+console.log("Started Web and WebSocket server");
 
 app.post("/agenthandoff", async (req, res) => {
 
-  console.log ("in agenthandoff: WORKSPACE_SID: ", process.env.WORKSPACE_SID);
+  console.log ("Agent handoff: WORKSPACE_SID: ", process.env.WORKSPACE_SID);
 
   const taskAttributes = {
     accountSid: req.body.AccountSid,
@@ -70,9 +70,9 @@ app.post("/incoming", async (req, res) => {
 
     // Initialize the appropriate GPT service
     const selectedGPTService = process.env.LLM_VENDOR;
-    addLog("info", "Selecting the GPT service for: " + selectedGPTService);
+    addLog("info", "Selected GPT service: " + selectedGPTService);
     const modelEnvVar = `${selectedGPTService}_LLM_MODEL`;
-    console.log ("LLM MODEL: ", `${process.env[modelEnvVar]}`);
+    console.log ("Selected LLM MODEL: ", `${process.env[modelEnvVar]}`);
     gptService = new services[selectedGPTService](`${process.env[modelEnvVar]}`);
 
     let segmentService = null;
@@ -81,7 +81,6 @@ app.post("/incoming", async (req, res) => {
     }
     else 
     {
-      console.log("process.env.SEGMENT_UNIFY_WRITE_KEY: ", process.env.SEGMENT_UNIFY_WRITE_KEY);
       console.log("Segment is not configured");
     }
     if (segmentService){
@@ -95,7 +94,6 @@ app.post("/incoming", async (req, res) => {
         if(e.data != null) {
           unifiedProfileEvents = JSON.stringify(e.data);
         } else { unifiedProfileEvents = null}
-        console.log("server.js: Events found: ", unifiedProfileEvents);
 
         gptService.updateUserContext("system", JSON.stringify(unifiedProfile));
         if(unifiedProfileEvents!=null){
@@ -146,10 +144,8 @@ app.ws("/sockets", (ws) => {
     // Incoming from MediaStream
     ws.on("message", async function message(data) {
       const msg = JSON.parse(data);
-      console.log("Data from MediaStream: ", msg);
       if (msg.type === "setup") {
         callcallSid = msg.callSid;
-        addLog("convrelay", `convrelay socket setup; callsid: ${callcallSid}`);
         from = msg.from;
         gptService.setCallInfo("user phone number", msg.from);
 
@@ -223,8 +219,7 @@ app.ws("/sockets", (ws) => {
       
     gptService.on('gptreply', async (gptReply, final, icount) => {
       //console.log(`Interaction ${icount}: GPT -> TTS: ${gptReply}`.green );
-      addLog('info', gptReply);
-      addLog('gpt', `GPT -> convrelay: Interaction ${icount}: ${gptReply}`);
+      //addLog('info', gptReply);
       textService.sendText(gptReply, final);
     });
 

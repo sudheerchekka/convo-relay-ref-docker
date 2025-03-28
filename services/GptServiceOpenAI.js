@@ -21,7 +21,6 @@ const availableFunctions = {};
 
 class GptServiceOpenAI extends EventEmitter {
   constructor(model) { // = "gpt-4o"
-    console.log(" new Gptservice model: " + model);
     super();
     this.openai = new OpenAI();
     this.model = model; // Initialize model here
@@ -39,14 +38,11 @@ class GptServiceOpenAI extends EventEmitter {
     ]),
       (this.partialResponseIndex = 0);
     this.isInterrupted = false;
-
-    console.log(`GptService init with model: ${this.model}`);
   }
 
   // Add the callSid to the chat context in case
   // ChatGPT decides to transfer the call.
   setCallInfo(info, value) {
-    console.log("setCallInfo", info, value);
     this.userContext.push({ role: "user", content: `${info}: ${value}` });
   }
 

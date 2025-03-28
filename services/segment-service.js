@@ -91,7 +91,6 @@ class SegmentService{
     // return JSON object
     let result = {};
 
-    console.log("space id: ", this.spaceId);
     const url = `https://profiles.segment.com/v1/spaces/${this.spaceId}/collections/users/profiles/phone:${phone}/traits?limit=100`;
     const password = "";
     const credentials = Buffer.from(`${profileToken}:${password}`).toString(
@@ -110,7 +109,7 @@ class SegmentService{
       .get(url, config)
       .then((response) => {
         result = { status: "found", data: response.data.traits };
-        console.log("traits in segment service: " + JSON.stringify(response.data));
+        console.log("Unified Profile traits: " + JSON.stringify(response.data));
 
         return result;
       })
@@ -152,7 +151,7 @@ class SegmentService{
       )
 
       .then((response) => {
-        console.log('Get Events success: ', response.data);
+        console.log('Unified Profile Events: ', response.data);
         return response.data;
       })
       .catch((error) => {

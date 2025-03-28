@@ -5,7 +5,6 @@ const { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand,  InvokeModel
 
 class GptServiceBedrock extends EventEmitter {
   constructor(model) { 
-    console.log(" new GptserviceBedrock model: " + model);
     super();
     this.bedrockClient = new BedrockRuntimeClient({
       region: process.env.AWS_REGION, 
@@ -19,14 +18,11 @@ class GptServiceBedrock extends EventEmitter {
     this.system_prompt = process.env.AWS_BEDROCK_SYSTEM_PROMPT;
     this.human_prompt = "";
     this.assistant_prompt = "";
-
-    console.log(`GptServiceBedrock init with model: ${this.model}`);
   }
 
   // Add the callSid to the chat context in case
   // ChatGPT decides to transfer the call.
   setCallInfo(info, value) {
-    console.log("setCallInfo", info, value);
     this.updateUserContext("human", `${info}: ${value}`);
   }
 
@@ -54,15 +50,12 @@ class GptServiceBedrock extends EventEmitter {
   updateUserContext(role, text) {
     if (role === "system"){
       this.system_prompt = this.system_prompt + "\n\n" + text;
-      console.log("system_prompt", this.system_prompt);
     }
     else if (role === "human"){
       this.human_prompt = this.human_prompt + "\n\n" + text;
-      console.log("human_prompt", this.human_prompt);
     }
     else if (role === "Assistant"){
       this.assistant_prompt = this.assistant_prompt + "\n\n" + text;
-      console.log("assistant_prompt", this.assistant_prompt);
     }
   }
 
@@ -104,7 +97,7 @@ class GptServiceBedrock extends EventEmitter {
     console.log("this.model:", this.model, );
 
     let full_prompt = this.system_prompt + "\n\nHuman: " + this.human_prompt + "\n\nAssistant: " + this.assistant_prompt;
-    console.log("full prompt: ", full_prompt);
+    //console.log("summarization: full prompt: ", full_prompt);
     
     const full_prompt_payload = JSON.stringify({
       prompt: full_prompt,
@@ -137,8 +130,6 @@ class GptServiceBedrock extends EventEmitter {
     
       // Get its type
       const chunk_type = chunk.type;
-
-      console.log("chunk_type: ", chunk_type);
     
       // Process the chunk depending on its type
       if (chunk_type === "message_start") {
@@ -156,9 +147,6 @@ class GptServiceBedrock extends EventEmitter {
     
       } else if (chunk_type === "completion") {
         // The "content_block_delta" chunks contain the actual response text
-    
-        // Print each individual chunk in real-time
-        console.log("chunk text: ", chunk.completion);
     
         // ... and add it to the complete message
         completeResponse = completeResponse + chunk.completion;
@@ -184,11 +172,8 @@ class GptServiceBedrock extends EventEmitter {
     }
 
     console.log("completeResponse: ", completeResponse);
-    console.log("processing done..");
 
-    //this.userContext.push({ role: "assistant", content: completeResponse });
     this.updateUserContext("System", completeResponse);
-    //console.log(`GPT -> user context length: ${this.userContext.length}`.green);
   }
 }
 

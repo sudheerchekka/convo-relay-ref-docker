@@ -43,12 +43,12 @@ Configure this Twiml Bin to your Twilio number
 ## Step 4 (Option 1): Start the docker container from the pre-built image
 ### **a. Pull the Docker image from Docker Hub**
 ```sh
-docker pull sudheertwilio/my-convo-relay-server:latest
+docker pull sudheertwilio/twilio-convo-relay-server
 ```
 
 ### **b. Create and start a new Docker container from image**
 ```sh
-docker run --env-file .env -p 8080:8080 my-convo-relay-server
+docker run --env-file .env -p 8080:8080 sudheertwilio/twilio-convo-relay-server
 ```
 
 ## Step 4 (Option 2): Running the server Locally
@@ -70,14 +70,13 @@ This will generate a public URL for your local server.
 ## Step 4 (Option 3): Build Docker image and run the server in the container
 ### **a. Build the Docker Image**
 ```sh
-docker build -t my-convo-relay-server .
-[optional to export image as tar file] docker save -o docker-image/my-convo-relay-server.tar my-convo-relay-server
+docker build -t twilio-convo-relay-server .
 ```
 ### **b. Deploy your Docker Image**
 Choose your favorite cloud provider to deploy the Dcoker container or just run locally. To run locally:
 
 ```sh
-docker run --env-file .env -p 8080:8080 my-convo-relay-server
+docker run --env-file .env -p 8080:8080 twilio-convo-relay-server
 
 ngrok http 8080
 ```
